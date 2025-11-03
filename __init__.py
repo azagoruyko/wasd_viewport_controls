@@ -19,6 +19,12 @@ def getCurrentCamera():
     if panel and cmds.getPanel(typeOf=panel) == 'modelPanel':
         return cmds.modelEditor(panel, query=True, camera=True)
 
+def getDagPath(name):
+    sel = om.MSelectionList()
+    sel.add(name)
+    return sel.getDagPath(0)
+
+
 class CameraControlFilter(QtCore.QObject):
     # Precomputed mapping from key to local direction vector
     KEY_VECTORS = {
@@ -47,9 +53,13 @@ class CameraControlFilter(QtCore.QObject):
         self.moveTimer.setInterval(self.DEFAULT_TIMER_MS) 
         self.moveTimer.timeout.connect(self.moveCameraLoop)
 
+    def _cameraUndoMovementEnabled(self):
+        cam = getCurrentCamera()
+        return cmds.getAttr(cam+".journalCommand")
+
     def _startMovementTimer(self):
         if not self._movingKeys and not self.moveTimer.isActive():
-            if not self._undoChunkOpen:
+            if not self._undoChunkOpen and self._cameraUndoMovementEnabled():
                 try:
                     cmds.undoInfo(openChunk=True, chunkName='WASD Camera Move')
                     self._undoChunkOpen = True
@@ -133,7 +143,13 @@ class CameraControlFilter(QtCore.QObject):
         worldDir = (localDir * camMat).normal()
         newCamPos = camPos + worldDir * scaledDistance
 
-        cmds.xform(cam, ws=True, t=(newCamPos.x, newCamPos.y, newCamPos.z))
+        if self._cameraUndoMovementEnabled():
+            cmds.xform(cam, ws=True, t=(newCamPos.x, newCamPos.y, newCamPos.z))
+
+        else: # Translate camera transform via OpenMaya API to avoid adding to undo queue
+            fnTransform = om.MFnTransform(getDagPath(cam))
+            fnTransform.setTranslation(om.MPoint(newCamPos.x, newCamPos.y, newCamPos.z), om.MSpace.kWorld)
+            
         cmds.refresh()
     
 
