@@ -148,7 +148,7 @@ class CameraControlFilter(QtCore.QObject):
 
         else: # Translate camera transform via OpenMaya API to avoid adding to undo queue
             fnTransform = om.MFnTransform(getDagPath(cam))
-            fnTransform.setTranslation(om.MPoint(newCamPos.x, newCamPos.y, newCamPos.z), om.MSpace.kWorld)
+            fnTransform.setTranslation(om.MVector(newCamPos.x, newCamPos.y, newCamPos.z), om.MSpace.kWorld)
             
         cmds.refresh()
     
