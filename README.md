@@ -22,6 +22,6 @@ The tool supports WASD and QE keys as well as F for framing selected objects.
 ## Tips
 Don't forget to press Alt with those keys!
 
-Remove hotkeys on Alt + WASDQEF keys in order to avoid clashes if you have any.
+Remove existing hotkeys on Alt + WASDQEF keys in order to avoid clashes if you have any.
 
 In case of bugs, let me know or open an issue here.
