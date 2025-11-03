@@ -1,5 +1,5 @@
 # WASD Viewport Controls
-It's an attempt to implement a convenient Godot/Unreal viewport manipulation with WASD(QE) keys.
+It's an attempt to implement a convenient Godot/Unreal viewport manipulation with WASD(QE) keys in Maya.
 
 <img width="208" height="96" alt="image" src="https://github.com/user-attachments/assets/1f0a79fd-21d4-4f25-9385-cc0e2f98fa2b" />
 
