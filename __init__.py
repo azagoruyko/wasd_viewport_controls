@@ -14,6 +14,11 @@ mayaMainWindow = wrapInstance(int(omui.MQtUtil.mainWindow()), QtWidgets.QWidget)
 def clamp(value, min_value, max_value):
     return max(min_value, min(max_value, value))
 
+def getCurrentCamera():
+    panel = cmds.getPanel(withFocus=True)
+    if panel and cmds.getPanel(typeOf=panel) == 'modelPanel':
+        return cmds.modelEditor(panel, query=True, camera=True)
+
 class CameraControlFilter(QtCore.QObject):
     # Precomputed mapping from key to local direction vector
     KEY_VECTORS = {
@@ -115,13 +120,7 @@ class CameraControlFilter(QtCore.QObject):
             self.moveCameraLocal(moveVector, distance=self.moveStep)
 
     def moveCameraLocal(self, localDir, distance):
-        panel = cmds.getPanel(withFocus=True)
-
-        # Only operate when the focused panel is a viewport (modelPanel)
-        if not panel or cmds.getPanel(typeOf=panel) != 'modelPanel':
-            return
-
-        cam = cmds.modelEditor(panel, query=True, camera=True)
+        cam = getCurrentCamera()
         camPos = om.MVector(cmds.xform(cam, q=True, ws=True, t=True))
         coiPos = om.MVector(cmds.camera(cam, q=True, worldCenterOfInterest=True))
         camMat = om.MMatrix(cmds.getAttr(cam + ".worldMatrix"))
