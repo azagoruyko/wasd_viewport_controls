@@ -35,6 +35,7 @@ class CameraControlFilter(QtCore.QObject):
         
         self._movingKeys = set()
         self._altPressed = False
+        self._undoChunkOpen = False
 
         # Single repeating timer to drive camera movement at a fixed rate
         self.moveTimer = QtCore.QTimer(self)
@@ -43,11 +44,27 @@ class CameraControlFilter(QtCore.QObject):
 
     def _startMovementTimer(self):
         if not self._movingKeys and not self.moveTimer.isActive():
+            if not self._undoChunkOpen:
+                try:
+                    cmds.undoInfo(openChunk=True, chunkName='WASD Camera Move')
+                    self._undoChunkOpen = True
+                except Exception:
+                    pass
             self.moveTimer.start()
 
     def _stopMovementTimer(self):
         if self.moveTimer.isActive():
             self.moveTimer.stop()
+
+        self.forceCloseUndoChunk()
+
+    def forceCloseUndoChunk(self):
+        if self._undoChunkOpen:
+            try:
+                cmds.undoInfo(closeChunk=True)
+            except Exception:
+                pass
+            self._undoChunkOpen = False        
 
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.KeyPress:
@@ -182,6 +199,8 @@ class ViewportControlPanel(QtWidgets.QFrame):
                             label='WASD Viewport Controls\tUse Alt + WASDQE, Alt+F - frame selected')
 
     def uninstallCameraControls(self):
+        # Ensure any open undo chunk is closed when disabling controls
+        self.cameraFilter.forceCloseUndoChunk()
         mayaMainWindow.removeEventFilter(self.cameraFilter)
         self.isInstalled = False
 
