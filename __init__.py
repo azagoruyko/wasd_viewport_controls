@@ -93,6 +93,7 @@ class CameraControlFilter(QtCore.QObject):
 
         if moveVector.length() > 0:
             moveVector = moveVector.normal()
+            
             # Constant distance per tick ensures linear motion over time
             self.moveCameraLocal(moveVector, distance=self.moveStep)
 
@@ -156,12 +157,9 @@ class ViewportControlPanel(QtWidgets.QFrame):
         stepLayout.addWidget(self.stepSlider)
         stepLayout.addWidget(self.stepValueLabel)
 
-        # No timer control: fixed DEFAULT_TIMER_MS in CameraControlFilter
-
         # Layout
         layout.addWidget(self.enabledButton)
         layout.addLayout(stepLayout)
-        # timer layout removed
 
         # Initialize from current filter if any
         self.refreshFromFilter()
@@ -175,8 +173,6 @@ class ViewportControlPanel(QtWidgets.QFrame):
         stepInt = clamp(int(round(step * 100)), int(self.STEP_MIN * 100), int(self.STEP_MAX * 100))
         self.stepSlider.setValue(stepInt)
         self.stepValueLabel.setText(f"{step:.3f}")
-
-        # Timer removed: fixed interval
 
     def installCameraControls(self):
         mayaMainWindow.installEventFilter(self.cameraFilter)
@@ -205,8 +201,6 @@ class ViewportControlPanel(QtWidgets.QFrame):
         step = clamp(float(val) / 100.0, self.STEP_MIN, self.STEP_MAX)
         self.stepValueLabel.setText(f"{step:.3f}")
         self.cameraFilter.moveStep = step
-
-    # Timer slider removed: interval is a constant
 
 # Initialize panel; it owns its filter instance
 controlPanel = ViewportControlPanel(parent=mayaMainWindow)
